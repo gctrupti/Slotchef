@@ -1,0 +1,22 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["backend", "optimizer"]
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config", "slotchef_optimizer"]
+
+[tool.pytest.ini_options]
+pythonpath = ["backend", "optimizer"]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py", "*_test.py"]
+testpaths = ["backend/tests", "optimizer/tests"]
+addopts = "-ra --strict-markers --import-mode=importlib"
+markers = [
+    "integration: tests requiring live PostgreSQL connectivity",
+]

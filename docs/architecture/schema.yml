@@ -1,0 +1,6040 @@
+openapi: 3.0.3
+info:
+  title: SlotChef Backend API
+  version: 1.0.0
+  description: Authoritative Django REST API and OR-Tools CP-SAT scheduling backend
+    for SlotChef household cooking coordination.
+paths:
+  /api/v1/admin/cash-collections/{cash_record_id}/resolve:
+    post:
+      operationId: admin_cash_collections_resolve_create
+      description: Admin arbitrates and resolves disputed cash collection.
+      summary: Admin resolves cash dispute (Admin only)
+      parameters:
+      - in: path
+        name: cash_record_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashResolveRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CashResolveRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CashResolveRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashCollectionRecord'
+          description: ''
+  /api/v1/admin/cooks/{id}/verification:
+    post:
+      operationId: admin_cooks_verification_create
+      description: Review and approve or reject cook verification dossier.
+      summary: Admin review cook verification dossier
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CookVerificationReview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CookVerificationReview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CookVerificationReview'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookVerificationProfile'
+          description: ''
+  /api/v1/admin/finance/ledger:
+    get:
+      operationId: admin_finance_ledger_list
+      description: Admin views platform commission ledger across cooks.
+      summary: List platform commission ledger entries (Admin only)
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommissionLedger'
+          description: ''
+  /api/v1/admin/finance/payouts:
+    post:
+      operationId: admin_finance_payouts_create
+      description: Admin processes payout disbursement for a cook.
+      summary: Disburse cook payout batch (Admin only)
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CookPayoutCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CookPayoutCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CookPayoutCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookPayoutRecord'
+          description: ''
+  /api/v1/admin/households/{id}/verification:
+    post:
+      operationId: admin_households_verification_create
+      description: Review and verify household residency status.
+      summary: Admin review household verification status
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HouseholdVerificationReview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HouseholdVerificationReview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HouseholdVerificationReview'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HouseholdVerificationProfile'
+          description: ''
+  /api/v1/admin/incidents/{id}/investigate:
+    post:
+      operationId: admin_incidents_investigate_create
+      description: Admin records confidential investigation findings.
+      summary: Update investigation notes
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentReport'
+          description: ''
+  /api/v1/admin/incidents/{id}/resolve:
+    post:
+      operationId: admin_incidents_resolve_create
+      description: Admin resolves or dismisses an incident complaint.
+      summary: Resolve incident
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentReport'
+          description: ''
+  /api/v1/admin/incidents/appeals/{id}/decide:
+    post:
+      operationId: admin_incidents_appeals_decide_create
+      description: Senior administrator adjudicates appeal.
+      summary: Adjudicate appeal
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentAppeal'
+          description: ''
+  /api/v1/admin/pricing/commission:
+    get:
+      operationId: admin_pricing_commission_list
+      description: Retrieve or configure platform commission rates (Admin only).
+      summary: List platform commission policies (Admin only)
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlatformCommissionConfig'
+          description: ''
+    post:
+      operationId: admin_pricing_commission_create
+      description: Retrieve or configure platform commission rates (Admin only).
+      summary: Create or override commission policy (Admin only)
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlatformCommissionConfig'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlatformCommissionConfig'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlatformCommissionConfig'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformCommissionConfig'
+          description: ''
+  /api/v1/admin/reviews/{id}/moderate:
+    post:
+      operationId: admin_reviews_moderate_create
+      description: Moderate published review.
+      summary: Moderate review
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoSidedReview'
+          description: ''
+  /api/v1/admin/safety/overdue-visits:
+    post:
+      operationId: admin_safety_overdue_visits_create
+      description: Detect and list overdue visits past start or completion grace thresholds.
+      summary: Audit and detect overdue visits
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/admin/safety/sos-incidents:
+    get:
+      operationId: admin_safety_sos_incidents_list
+      description: List active and historical SOS emergency incidents.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSOSIncidentList'
+          description: ''
+  /api/v1/admin/safety/sos-incidents/{id}:
+    post:
+      operationId: admin_safety_sos_incidents_create
+      description: Acknowledge or resolve an SOS emergency incident.
+      summary: Acknowledge or resolve SOS
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOSIncident'
+          description: ''
+  /api/v1/admin/schedules/{date}:
+    get:
+      operationId: admin_schedules_retrieve
+      description: Inspect the active published schedule plan and unassigned conflicts
+        for a target date.
+      summary: Admin inspect published daily plan and conflicts
+      parameters:
+      - in: path
+        name: date
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchedulePlanDetail'
+          description: ''
+  /api/v1/admin/schedules/{date}/reoptimize:
+    post:
+      operationId: admin_schedules_reoptimize_create
+      description: Trigger controlled re-optimization of a daily schedule.
+      summary: Admin trigger re-optimization for date
+      parameters:
+      - in: path
+        name: date
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchedulePlanDetail'
+          description: ''
+  /api/v1/admin/trust/restrictions:
+    post:
+      operationId: admin_trust_restrictions_create
+      description: Impose administrative account restrictions.
+      summary: Impose restriction
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRestriction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AccountRestriction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AccountRestriction'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountRestriction'
+          description: ''
+  /api/v1/admin/trust/restrictions/{id}/lift:
+    post:
+      operationId: admin_trust_restrictions_lift_create
+      description: Lift an active account restriction.
+      summary: Lift restriction
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountRestriction'
+          description: ''
+  /api/v1/assignments/{id}/check-in:
+    post:
+      operationId: assignments_check_in_create
+      description: Record cook physical arrival / check-in at the household.
+      summary: Cook check-in at household
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitEvent'
+          description: ''
+  /api/v1/assignments/{id}/check-out:
+    post:
+      operationId: assignments_check_out_create
+      description: Record cook departure / check-out from household premises.
+      summary: Cook check-out from household
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitSafetyCheck'
+          description: ''
+  /api/v1/assignments/{id}/complete:
+    post:
+      operationId: assignments_complete_create
+      description: Mark visit completed and meal prepared.
+      summary: Complete cooking visit
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitEvent'
+          description: ''
+  /api/v1/assignments/{id}/confirm-arrival:
+    post:
+      operationId: assignments_confirm_arrival_create
+      description: Household resident confirms cook arrival.
+      summary: Household confirms cook arrival
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitSafetyCheck'
+          description: ''
+  /api/v1/assignments/{id}/location-ping:
+    post:
+      operationId: assignments_location_ping_create
+      description: Record consent-based GPS coordinate ping during active visit.
+      summary: Consent-based location ping
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitSafetyCheck'
+          description: ''
+  /api/v1/assignments/{id}/report-incident:
+    post:
+      operationId: assignments_report_incident_create
+      description: Report an operational incident and trigger backup cook re-optimization
+        on absence.
+      summary: Report visit incident (delay/absence) and trigger backup workflow
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentReport'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IncidentReport'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IncidentReport'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentReport'
+          description: ''
+  /api/v1/assignments/{id}/reviews:
+    post:
+      operationId: assignments_reviews_create
+      description: Submit reciprocal rating and review for visit.
+      summary: Submit visit review
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwoSidedReview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TwoSidedReview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TwoSidedReview'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoSidedReview'
+          description: ''
+  /api/v1/assignments/{id}/sos:
+    post:
+      operationId: assignments_sos_create
+      description: Trigger emergency SOS alarm with immediate contact dispatch and
+        India 112 metadata.
+      summary: Trigger emergency SOS alarm
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOSIncident'
+          description: ''
+  /api/v1/assignments/{id}/start:
+    post:
+      operationId: assignments_start_create
+      description: Mark visit as started and cooking in progress.
+      summary: Start cooking visit
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitEvent'
+          description: ''
+  /api/v1/auth/admin/accept-invitation:
+    post:
+      operationId: auth_admin_accept_invitation_create
+      description: Accept an administrator invitation and activate credentials.
+      summary: Accept Admin Invitation and set credentials
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminInvitationAccept'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminInvitationAccept'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminInvitationAccept'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+          description: ''
+  /api/v1/auth/admin/invite:
+    post:
+      operationId: auth_admin_invite_create
+      description: Invite an administrator to join with society_admin or platform_admin
+        role.
+      summary: Create Admin Invitation (Platform Admin only)
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminInvitationCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminInvitationCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminInvitationCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/admin/mfa-verify:
+    post:
+      operationId: auth_admin_mfa_verify_create
+      description: Verify administrator MFA step-up code to receive full access JWT
+        tokens.
+      summary: Complete Admin MFA Step-up Authentication
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminMFAVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminMFAVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminMFAVerify'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+          description: ''
+  /api/v1/auth/contact/confirm-change:
+    post:
+      operationId: auth_contact_confirm_change_create
+      description: Confirm updating contact email or phone with verified OTP on the
+        new target.
+      summary: Confirm Contact Change with OTP
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactChangeConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactChangeConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContactChangeConfirm'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/contact/request-change:
+    post:
+      operationId: auth_contact_request_change_create
+      description: Request updating contact email or phone requiring OTP verification
+        on the new target.
+      summary: Request Contact Change OTP
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactChangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactChangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContactChangeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/login:
+    post:
+      operationId: auth_login_create
+      description: Authenticate with registered mobile number OR registered email
+        and password (no OTP for normal users).
+      summary: Login with Email or Mobile Number + Password
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+          description: ''
+  /api/v1/auth/logout:
+    post:
+      operationId: auth_logout_create
+      description: Revoke user JWT refresh token upon sign out.
+      summary: Revoke JWT tokens on logout
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/otp/login:
+    post:
+      operationId: auth_otp_login_create
+      description: Optional passwordless login using either verified mobile number
+        or verified email + OTP.
+      summary: Login with OTP code
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPLogin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPLogin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPLogin'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+          description: ''
+  /api/v1/auth/otp/request:
+    post:
+      operationId: auth_otp_request_create
+      description: Request an OTP for registration, login, or MFA.
+      summary: Request OTP code via SMS or Email
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/otp/verify:
+    post:
+      operationId: auth_otp_verify_create
+      description: Verify an issued OTP code to complete channel verification.
+      summary: Verify OTP code
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPVerify'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/password-reset/confirm:
+    post:
+      operationId: auth_password_reset_confirm_create
+      description: Confirm password reset with OTP verification.
+      summary: Confirm Password Reset with OTP
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/password-reset/request:
+    post:
+      operationId: auth_password_reset_request_create
+      description: Request a password reset OTP for registered mobile or email.
+      summary: Request Password Reset OTP
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/register:
+    post:
+      operationId: auth_register_create
+      description: 'Step 1: Register a new user account (strictly household_member
+        or cook) with initial channel OTP dispatch.'
+      summary: Register user account (Cook or Household) - Step 1
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/register/verify-otp:
+    post:
+      operationId: auth_register_verify_otp_create
+      description: 'Step 2: Verify registration OTP code to confirm contact channel
+        and activate credentials.'
+      summary: Verify Registration OTP - Step 2
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterVerifyOTP'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterVerifyOTP'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterVerifyOTP'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+          description: ''
+  /api/v1/bookings/{booking_id}/price-breakdown:
+    get:
+      operationId: bookings_price_breakdown_retrieve
+      description: Retrieve immutable price breakdown snapshot for a booking.
+      summary: Get booking price breakdown and financial snapshot
+      parameters:
+      - in: path
+        name: booking_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bookings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingPriceBreakdown'
+          description: ''
+  /api/v1/bookings/{id}:
+    get:
+      operationId: bookings_retrieve
+      description: Retrieve booking details, assigned cook, or conflict explanations.
+      summary: Get booking details and allocation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bookings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetail'
+          description: ''
+  /api/v1/bookings/{id}/cancel:
+    post:
+      operationId: bookings_cancel_create
+      description: Cancel a booking under operational cancellation policy.
+      summary: Cancel booking
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bookings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetail'
+          description: ''
+  /api/v1/bookings/{id}/reschedule:
+    post:
+      operationId: bookings_reschedule_create
+      description: Request rescheduling to an alternative date or time window.
+      summary: Reschedule booking
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bookings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetail'
+          description: ''
+  /api/v1/cooks:
+    get:
+      operationId: cooks_list
+      description: List verified active cooks or onboard a cook profile.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - cooks
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCookProfileList'
+          description: ''
+    post:
+      operationId: cooks_create
+      description: List verified active cooks or onboard a cook profile.
+      tags:
+      - cooks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CookProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CookProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CookProfile'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookProfile'
+          description: ''
+  /api/v1/cooks/{id}:
+    get:
+      operationId: cooks_retrieve
+      description: Retrieve details for a specific cook.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cooks
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookProfile'
+          description: ''
+  /api/v1/cooks/{id}/availability:
+    get:
+      operationId: cooks_availability_list
+      description: Read or add/update availability working windows for a cook.
+      summary: Get cook working windows and breaks
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cooks
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CookAvailability'
+          description: ''
+    patch:
+      operationId: cooks_availability_partial_update
+      description: Read or add/update availability working windows for a cook.
+      summary: Update cook availability window
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cooks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCookAvailability'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCookAvailability'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCookAvailability'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookAvailability'
+          description: ''
+  /api/v1/cooks/{id}/leave:
+    post:
+      operationId: cooks_leave_create
+      description: Add scheduled leave for a cook.
+      summary: Record scheduled leave for a cook
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cooks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CookLeave'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CookLeave'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CookLeave'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookLeave'
+          description: ''
+  /api/v1/cooks/me/earnings:
+    get:
+      operationId: cooks_me_earnings_retrieve
+      description: Cook retrieves gross earnings, cash collections, and payable net
+        balance.
+      summary: Cook financial summary and net payable balance
+      tags:
+      - cooks
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookFinancialSummary'
+          description: ''
+  /api/v1/cooks/me/schedule:
+    get:
+      operationId: cooks_me_schedule_list
+      description: Retrieve schedule assignments for the currently authenticated cook.
+      summary: Current cook assigned schedule
+      tags:
+      - cooks
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CookAssignmentDetail'
+          description: ''
+  /api/v1/cooks/me/verification:
+    get:
+      operationId: cooks_me_verification_retrieve
+      description: Retrieve or submit KYC and verification dossier for authenticated
+        cook.
+      summary: Get authenticated cook verification profile
+      tags:
+      - cooks
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookVerificationProfile'
+          description: ''
+    post:
+      operationId: cooks_me_verification_create
+      description: Retrieve or submit KYC and verification dossier for authenticated
+        cook.
+      summary: Submit or update cook verification dossier
+      tags:
+      - cooks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CookVerificationProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CookVerificationProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CookVerificationProfile'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookVerificationProfile'
+          description: ''
+  /api/v1/cooks/visits/{booking_id}/cash-collection:
+    post:
+      operationId: cooks_visits_cash_collection_create
+      description: Cook reports cash collected physically from household for a visit.
+      summary: Cook reports physical cash collection
+      parameters:
+      - in: path
+        name: booking_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cooks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashReportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CashReportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CashReportRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashCollectionRecord'
+          description: ''
+  /api/v1/health:
+    get:
+      operationId: health_retrieve
+      description: Verify application and PostgreSQL database readiness.
+      summary: Backend health check
+      tags:
+      - system
+      security:
+      - {}
+      responses:
+        '200':
+          description: Backend and PostgreSQL database are healthy.
+        '503':
+          description: PostgreSQL database is unreachable.
+  /api/v1/households:
+    get:
+      operationId: households_list
+      description: List households the user has access to, or create a new household.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - households
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHouseholdList'
+          description: ''
+    post:
+      operationId: households_create
+      description: List households the user has access to, or create a new household.
+      tags:
+      - households
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Household'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Household'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Household'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Household'
+          description: ''
+  /api/v1/households/{household_id}/packages:
+    get:
+      operationId: households_packages_list
+      description: List subscriptions for a household.
+      summary: List subscriptions and remaining visits for a household
+      parameters:
+      - in: path
+        name: household_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - households
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HouseholdPackageSubscription'
+          description: ''
+  /api/v1/households/{household_id}/packages/subscribe:
+    post:
+      operationId: households_packages_subscribe_create
+      description: Enroll a household in a weekly or monthly package, scheduling visits
+        via CP-SAT optimizer.
+      summary: Subscribe household to a cooking package
+      parameters:
+      - in: path
+        name: household_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - households
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageSubscribeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PackageSubscribeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PackageSubscribeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HouseholdPackageSubscription'
+          description: ''
+  /api/v1/households/{id}:
+    get:
+      operationId: households_retrieve
+      description: Retrieve details of a specific household.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - households
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Household'
+          description: ''
+  /api/v1/households/{id}/bookings:
+    post:
+      operationId: households_bookings_create
+      description: Create a new booking request for a household with idempotent CP-SAT
+        scheduling.
+      summary: Create household booking and trigger CP-SAT scheduler
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - households
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetail'
+          description: ''
+  /api/v1/households/{id}/verification:
+    get:
+      operationId: households_verification_retrieve
+      description: Retrieve or submit residency verification for a household.
+      summary: Get household residency verification
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - households
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HouseholdVerificationProfile'
+          description: ''
+    post:
+      operationId: households_verification_create
+      description: Retrieve or submit residency verification for a household.
+      summary: Submit household residency verification proof
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - households
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HouseholdVerificationProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HouseholdVerificationProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HouseholdVerificationProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HouseholdVerificationProfile'
+          description: ''
+  /api/v1/households/visits/{booking_id}/confirm-cash:
+    post:
+      operationId: households_visits_confirm_cash_create
+      description: Household confirms physical cash payment to cook.
+      summary: Household confirms cash paid to cook
+      parameters:
+      - in: path
+        name: booking_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - households
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashCollectionRecord'
+          description: ''
+  /api/v1/households/visits/{booking_id}/dispute-cash:
+    post:
+      operationId: households_visits_dispute_cash_create
+      description: Household disputes physical cash collection reported by cook.
+      summary: Household disputes physical cash collection
+      parameters:
+      - in: path
+        name: booking_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - households
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashDisputeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CashDisputeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CashDisputeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashCollectionRecord'
+          description: ''
+  /api/v1/incidents:
+    get:
+      operationId: incidents_list
+      description: File and list two-sided complaints with evidence.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - incidents
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedIncidentReportList'
+          description: ''
+    post:
+      operationId: incidents_create
+      description: File and list two-sided complaints with evidence.
+      tags:
+      - incidents
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentReport'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IncidentReport'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IncidentReport'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentReport'
+          description: ''
+  /api/v1/incidents/{id}/appeal:
+    post:
+      operationId: incidents_appeal_create
+      description: Submit appeal against an adverse incident resolution.
+      summary: File incident appeal
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - incidents
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentAppeal'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IncidentAppeal'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IncidentAppeal'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentAppeal'
+          description: ''
+  /api/v1/me:
+    get:
+      operationId: me_retrieve
+      description: Retrieve details, roles, and profile context of the authenticated
+        user.
+      summary: Current user profile and memberships
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/packages/bookings/{booking_id}/reschedule:
+    post:
+      operationId: packages_bookings_reschedule_create
+      description: Reschedule a specific package visit within the subscription validity
+        window.
+      summary: Reschedule a package visit within validity window
+      parameters:
+      - in: path
+        name: booking_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - packages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageRescheduleVisitRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PackageRescheduleVisitRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PackageRescheduleVisitRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetail'
+          description: ''
+  /api/v1/packages/plans:
+    get:
+      operationId: packages_plans_list
+      description: List available package plans or configure a new package (Admin
+        only for creation).
+      summary: List active weekly and monthly package plans
+      tags:
+      - packages
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PackagePlan'
+          description: ''
+    post:
+      operationId: packages_plans_create
+      description: List available package plans or configure a new package (Admin
+        only for creation).
+      summary: Create a new package plan (Admin only)
+      tags:
+      - packages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackagePlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PackagePlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PackagePlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackagePlan'
+          description: ''
+  /api/v1/packages/subscriptions/{subscription_id}:
+    get:
+      operationId: packages_subscriptions_retrieve
+      description: Retrieve full detail of a package subscription, including linked
+        visits.
+      summary: Get subscription details and visit entitlement status
+      parameters:
+      - in: path
+        name: subscription_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - packages
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HouseholdPackageSubscription'
+          description: ''
+  /api/v1/packages/subscriptions/{subscription_id}/cancel:
+    post:
+      operationId: packages_subscriptions_cancel_create
+      description: Cancel a package subscription and remaining future visits.
+      summary: Cancel package subscription
+      parameters:
+      - in: path
+        name: subscription_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - packages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageCancelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PackageCancelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PackageCancelRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HouseholdPackageSubscription'
+          description: ''
+  /api/v1/packages/subscriptions/{subscription_id}/pause:
+    post:
+      operationId: packages_subscriptions_pause_create
+      description: Pause an active package subscription.
+      summary: Pause package subscription
+      parameters:
+      - in: path
+        name: subscription_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - packages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackagePauseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PackagePauseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PackagePauseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HouseholdPackageSubscription'
+          description: ''
+  /api/v1/packages/subscriptions/{subscription_id}/resume:
+    post:
+      operationId: packages_subscriptions_resume_create
+      description: Resume a paused package subscription.
+      summary: Resume paused package subscription
+      parameters:
+      - in: path
+        name: subscription_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - packages
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HouseholdPackageSubscription'
+          description: ''
+  /api/v1/payments/history:
+    get:
+      operationId: payments_history_list
+      description: List transaction history for current user's households or cooks.
+      summary: List payment transaction history
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentTransaction'
+          description: ''
+  /api/v1/payments/orders:
+    post:
+      operationId: payments_orders_create
+      description: Initiate an online payment order for a booking or subscription.
+      summary: Create online payment order
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentOrderCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentOrderCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentOrderCreateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOrder'
+          description: ''
+  /api/v1/payments/transactions/{transaction_id}/refund:
+    post:
+      operationId: payments_transactions_refund_create
+      description: Issue refund against a successful payment transaction (Admin only).
+      summary: Issue payment refund (Admin only)
+      parameters:
+      - in: path
+        name: transaction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundRecord'
+          description: ''
+  /api/v1/payments/verify:
+    post:
+      operationId: payments_verify_create
+      description: Verify online payment signature returned by the client gateway.
+      summary: Verify payment signature and finalize order
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentVerifyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransaction'
+          description: ''
+  /api/v1/payments/webhook:
+    post:
+      operationId: payments_webhook_create
+      description: Public webhook receiver with signature validation.
+      summary: Payment gateway webhook listener
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/pricing/estimate:
+    post:
+      operationId: pricing_estimate_create
+      description: Estimate price breakdown for a service window without persisting
+        a booking.
+      summary: Upfront price estimate breakdown
+      tags:
+      - pricing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriceEstimateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PriceEstimateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PriceEstimateRequest'
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceEstimateResponse'
+          description: ''
+  /api/v1/pricing/rules:
+    get:
+      operationId: pricing_rules_list
+      description: List active pricing rules or create new pricing tier.
+      summary: List active pricing rules
+      tags:
+      - pricing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServicePricingRule'
+          description: ''
+    post:
+      operationId: pricing_rules_create
+      description: List active pricing rules or create new pricing tier.
+      summary: Create a new service pricing rule (Admin only)
+      tags:
+      - pricing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServicePricingRule'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServicePricingRule'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServicePricingRule'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePricingRule'
+          description: ''
+  /api/v1/pricing/rules/{rule_id}:
+    get:
+      operationId: pricing_rules_retrieve
+      description: Retrieve or update a specific pricing rule.
+      summary: Retrieve pricing rule details
+      parameters:
+      - in: path
+        name: rule_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - pricing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePricingRule'
+          description: ''
+    patch:
+      operationId: pricing_rules_partial_update
+      description: Retrieve or update a specific pricing rule.
+      summary: Update a pricing rule (Admin only)
+      parameters:
+      - in: path
+        name: rule_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - pricing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedServicePricingRule'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedServicePricingRule'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedServicePricingRule'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePricingRule'
+          description: ''
+  /api/v1/safety/emergency-contacts:
+    get:
+      operationId: safety_emergency_contacts_list
+      description: Manage trusted emergency contacts.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - safety
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEmergencyContactList'
+          description: ''
+    post:
+      operationId: safety_emergency_contacts_create
+      description: Manage trusted emergency contacts.
+      tags:
+      - safety
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyContact'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmergencyContact'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmergencyContact'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyContact'
+          description: ''
+  /api/v1/safety/emergency-contacts/{id}:
+    get:
+      operationId: safety_emergency_contacts_retrieve
+      description: Retrieve, update, or remove a trusted emergency contact.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - safety
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyContact'
+          description: ''
+    put:
+      operationId: safety_emergency_contacts_update
+      description: Retrieve, update, or remove a trusted emergency contact.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - safety
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyContact'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmergencyContact'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmergencyContact'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyContact'
+          description: ''
+    patch:
+      operationId: safety_emergency_contacts_partial_update
+      description: Retrieve, update, or remove a trusted emergency contact.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - safety
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEmergencyContact'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEmergencyContact'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEmergencyContact'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyContact'
+          description: ''
+    delete:
+      operationId: safety_emergency_contacts_destroy
+      description: Retrieve, update, or remove a trusted emergency contact.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - safety
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/societies:
+    get:
+      operationId: societies_list
+      description: List all active societies or create a new society (admin only).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - societies
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSocietyList'
+          description: ''
+    post:
+      operationId: societies_create
+      description: List all active societies or create a new society (admin only).
+      tags:
+      - societies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Society'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Society'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Society'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Society'
+          description: ''
+  /api/v1/societies/{id}:
+    get:
+      operationId: societies_retrieve
+      description: Retrieve details of a specific society.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - societies
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Society'
+          description: ''
+components:
+  schemas:
+    AccountRestriction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+        user_email:
+          type: string
+          readOnly: true
+        incident:
+          type: string
+          format: uuid
+          nullable: true
+        restriction_type:
+          $ref: '#/components/schemas/RestrictionTypeEnum'
+        reason:
+          type: string
+        is_active:
+          type: boolean
+          readOnly: true
+        imposed_by:
+          type: string
+          format: uuid
+          readOnly: true
+        imposed_by_email:
+          type: string
+          readOnly: true
+        lifted_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        lift_reason:
+          type: string
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - imposed_by
+      - imposed_by_email
+      - is_active
+      - lift_reason
+      - lifted_by
+      - reason
+      - restriction_type
+      - user
+      - user_email
+    AdminInvitationAccept:
+      type: object
+      description: Accept invitation and activate administrator credentials.
+      properties:
+        token:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+          minLength: 10
+        first_name:
+          type: string
+          default: ''
+        last_name:
+          type: string
+          default: ''
+        phone:
+          type: string
+          default: ''
+        mfa_enabled:
+          type: boolean
+          default: true
+      required:
+      - password
+      - token
+    AdminInvitationCreate:
+      type: object
+      description: Create an admin account invitation.
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        role_code:
+          $ref: '#/components/schemas/RoleCodeEnum'
+      required:
+      - email
+      - role_code
+    AdminMFAVerify:
+      type: object
+      description: Complete Admin MFA step-up verification.
+      properties:
+        mfa_token:
+          type: string
+        otp:
+          type: string
+          maxLength: 6
+          minLength: 6
+      required:
+      - mfa_token
+      - otp
+    AvailabilityTypeEnum:
+      enum:
+      - regular
+      - override
+      type: string
+      description: |-
+        * `regular` - Regular
+        * `override` - Override
+    BackgroundVerificationStatusEnum:
+      enum:
+      - pending
+      - clear
+      - flagged
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `clear` - Clear
+        * `flagged` - Flagged
+        * `failed` - Failed
+    BookingCreate:
+      type: object
+      description: Input serializer for household booking requests.
+      properties:
+        service_date:
+          type: string
+          format: date
+        meal_type:
+          allOf:
+          - $ref: '#/components/schemas/MealTypeEnum'
+          default: breakfast
+        earliest_start:
+          type: string
+          description: HH:MM format, e.g. '07:30'
+        latest_finish:
+          type: string
+          description: HH:MM format, e.g. '08:45'
+        earliest_start_minute:
+          type: integer
+          maximum: 1440
+          minimum: 0
+        latest_finish_minute:
+          type: integer
+          maximum: 1440
+          minimum: 0
+        estimated_duration_minutes:
+          type: integer
+          maximum: 240
+          minimum: 15
+          default: 45
+        required_skills:
+          type: array
+          items:
+            type: string
+        dietary_tags:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+          default: ''
+        priority:
+          type: integer
+          maximum: 3
+          minimum: 1
+          default: 1
+      required:
+      - service_date
+    BookingDetail:
+      type: object
+      description: Detailed booking serializer with requirements, assignment, and
+        conflicts.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        household:
+          type: string
+          format: uuid
+        household_label:
+          type: string
+          readOnly: true
+        society_id:
+          type: string
+          format: uuid
+          readOnly: true
+        service_date:
+          type: string
+          format: date
+        earliest_start_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Earliest allowed start minute (0..1440)
+        latest_finish_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Latest allowed finish minute (0..1440)
+        duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        meal_type:
+          $ref: '#/components/schemas/MealTypeEnum'
+        priority:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Priority level (1=normal, 2=high, 3=urgent)
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BookingDetailStatusEnum'
+          readOnly: true
+        notes:
+          type: string
+        requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingRequirement'
+          readOnly: true
+        assignment:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        conflict_reasons:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+        price_breakdown:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assignment
+      - conflict_reasons
+      - created_at
+      - earliest_start_minute
+      - household
+      - household_label
+      - id
+      - latest_finish_minute
+      - price_breakdown
+      - requirements
+      - service_date
+      - society_id
+      - status
+      - updated_at
+    BookingDetailStatusEnum:
+      enum:
+      - DRAFT
+      - PENDING
+      - CONFIRMED
+      - IN_PROGRESS
+      - COMPLETED
+      - CANCELLED
+      - UNFULFILLED
+      - NEEDS_REVIEW
+      - REJECTED
+      type: string
+      description: |-
+        * `DRAFT` - Draft
+        * `PENDING` - Pending
+        * `CONFIRMED` - Confirmed
+        * `IN_PROGRESS` - In Progress
+        * `COMPLETED` - Completed
+        * `CANCELLED` - Cancelled
+        * `UNFULFILLED` - Unfulfilled
+        * `NEEDS_REVIEW` - Needs Review
+        * `REJECTED` - Rejected
+    BookingPriceBreakdown:
+      type: object
+      description: Detailed price breakdown serializer with snapshot metadata.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        booking:
+          type: string
+          format: uuid
+          readOnly: true
+        pricing_rule:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        commission_config:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        base_fee_minor_units:
+          type: integer
+          readOnly: true
+        duration_fee_minor_units:
+          type: integer
+          readOnly: true
+        meal_multiplier:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          readOnly: true
+        subtotal_minor_units:
+          type: integer
+          readOnly: true
+        platform_commission_minor_units:
+          type: integer
+          readOnly: true
+        cook_earnings_minor_units:
+          type: integer
+          readOnly: true
+        tax_minor_units:
+          type: integer
+          readOnly: true
+        discount_minor_units:
+          type: integer
+          readOnly: true
+        total_amount_minor_units:
+          type: integer
+          readOnly: true
+        currency:
+          type: string
+          readOnly: true
+        snapshot_metadata:
+          readOnly: true
+          description: Immutable audit snapshot of multipliers and formula inputs
+            at calculation time.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - base_fee_minor_units
+      - booking
+      - commission_config
+      - cook_earnings_minor_units
+      - created_at
+      - currency
+      - discount_minor_units
+      - duration_fee_minor_units
+      - id
+      - meal_multiplier
+      - platform_commission_minor_units
+      - pricing_rule
+      - snapshot_metadata
+      - subtotal_minor_units
+      - tax_minor_units
+      - total_amount_minor_units
+      - updated_at
+    BookingRequirement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        skill:
+          type: string
+          format: uuid
+        skill_code:
+          type: string
+          readOnly: true
+        skill_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - skill
+      - skill_code
+      - skill_name
+    Building:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        society:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 32
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - society
+    CashCollectionRecord:
+      type: object
+      description: Cash on delivery visit collection record.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        booking:
+          type: string
+          format: uuid
+        cook:
+          type: string
+          format: uuid
+        cook_email:
+          type: string
+          readOnly: true
+        household:
+          type: string
+          format: uuid
+        reported_amount_minor_units:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        collected_at:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          $ref: '#/components/schemas/CashCollectionRecordStatusEnum'
+        cook_notes:
+          type: string
+        household_dispute_reason:
+          type: string
+        admin_resolution_notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - booking
+      - cook
+      - cook_email
+      - created_at
+      - household
+      - id
+      - reported_amount_minor_units
+      - updated_at
+    CashCollectionRecordStatusEnum:
+      enum:
+      - reported
+      - confirmed
+      - disputed
+      - resolved
+      type: string
+      description: |-
+        * `reported` - Reported by Cook
+        * `confirmed` - Confirmed by Household
+        * `disputed` - Disputed by Household
+        * `resolved` - Resolved by Admin
+    CashDisputeRequest:
+      type: object
+      description: Household disputing physical cash collection.
+      properties:
+        dispute_reason:
+          type: string
+          minLength: 5
+      required:
+      - dispute_reason
+    CashReportRequest:
+      type: object
+      description: Cook reporting physical cash collection.
+      properties:
+        reported_amount_minor_units:
+          type: integer
+          minimum: 1
+        cook_notes:
+          type: string
+          default: ''
+      required:
+      - reported_amount_minor_units
+    CashResolveRequest:
+      type: object
+      description: Admin resolving cash collection dispute.
+      properties:
+        resolved_amount_minor_units:
+          type: integer
+          minimum: 0
+        resolution_notes:
+          type: string
+          minLength: 5
+      required:
+      - resolution_notes
+      - resolved_amount_minor_units
+    CategoryEnum:
+      enum:
+      - delay
+      - absence
+      - equipment
+      - ingredient
+      - behavior
+      - hygiene
+      - property_damage
+      - safety
+      - payment_dispute
+      - harassment
+      - other
+      type: string
+      description: |-
+        * `delay` - Delay
+        * `absence` - Absence / Unavailability
+        * `equipment` - Equipment Issue
+        * `ingredient` - Ingredient Issue
+        * `behavior` - Behavior Issue
+        * `hygiene` - Hygiene / Food Quality
+        * `property_damage` - Property Damage
+        * `safety` - Safety Concern
+        * `payment_dispute` - Payment Dispute
+        * `harassment` - Harassment
+        * `other` - Other
+    CommissionLedger:
+      type: object
+      description: Cook commission ledger entry.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        cook:
+          type: string
+          format: uuid
+          readOnly: true
+        cook_email:
+          type: string
+          readOnly: true
+        booking:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        entry_type:
+          allOf:
+          - $ref: '#/components/schemas/EntryTypeEnum'
+          readOnly: true
+        amount_minor_units:
+          type: integer
+          readOnly: true
+          description: Commission amount in minor units.
+        running_balance_minor_units:
+          type: integer
+          readOnly: true
+          description: Cumulative net commission owed by cook to the platform.
+        description:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount_minor_units
+      - booking
+      - cook
+      - cook_email
+      - created_at
+      - description
+      - entry_type
+      - id
+      - running_balance_minor_units
+    CommissionTypeEnum:
+      enum:
+      - percentage
+      - fixed
+      - hybrid
+      type: string
+      description: |-
+        * `percentage` - Percentage of Subtotal
+        * `fixed` - Fixed Fee Per Visit
+        * `hybrid` - Hybrid (Percentage + Fixed Fee)
+    ContactChangeConfirm:
+      type: object
+      description: Confirm updating contact email or phone with OTP verified on the
+        new target.
+      properties:
+        new_target:
+          type: string
+        channel:
+          $ref: '#/components/schemas/OTPChannelEnum'
+        otp:
+          type: string
+          maxLength: 6
+          minLength: 6
+      required:
+      - channel
+      - new_target
+      - otp
+    ContactChangeRequest:
+      type: object
+      description: Request updating contact email or phone requiring verification
+        on the new target.
+      properties:
+        new_target:
+          type: string
+          description: New email address or mobile phone number
+        channel:
+          $ref: '#/components/schemas/OTPChannelEnum'
+      required:
+      - channel
+      - new_target
+    CookAssignmentDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        booking:
+          type: string
+          format: uuid
+        household_label:
+          type: string
+          readOnly: true
+        building_name:
+          type: string
+          readOnly: true
+        society_name:
+          type: string
+          readOnly: true
+        meal_type:
+          type: string
+          readOnly: true
+        start_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        end_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/CookAssignmentDetailStatusEnum'
+        notes:
+          type: string
+          readOnly: true
+      required:
+      - booking
+      - building_name
+      - end_at
+      - end_minute
+      - household_label
+      - id
+      - meal_type
+      - notes
+      - society_name
+      - start_at
+      - start_minute
+    CookAssignmentDetailStatusEnum:
+      enum:
+      - PROPOSED
+      - CONFIRMED
+      - STARTED
+      - COMPLETED
+      - CANCELLED
+      - REPLACED
+      - MISSED
+      - DISPUTED
+      type: string
+      description: |-
+        * `PROPOSED` - Proposed
+        * `CONFIRMED` - Confirmed
+        * `STARTED` - Started
+        * `COMPLETED` - Completed
+        * `CANCELLED` - Cancelled
+        * `REPLACED` - Replaced
+        * `MISSED` - Missed
+        * `DISPUTED` - Disputed
+    CookAvailability:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        cook:
+          type: string
+          format: uuid
+        weekday:
+          nullable: true
+          minimum: -2147483648
+          maximum: 2147483647
+          oneOf:
+          - $ref: '#/components/schemas/RecurringWeekdayEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        specific_date:
+          type: string
+          format: date
+          nullable: true
+        start_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Start minute from midnight (0-1440)
+        end_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: End minute from midnight (0-1440)
+        availability_type:
+          $ref: '#/components/schemas/AvailabilityTypeEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cook
+      - created_at
+      - end_minute
+      - id
+      - start_minute
+    CookBreak:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        cook:
+          type: string
+          format: uuid
+        specific_date:
+          type: string
+          format: date
+          nullable: true
+        recurring_weekday:
+          nullable: true
+          minimum: -2147483648
+          maximum: 2147483647
+          oneOf:
+          - $ref: '#/components/schemas/RecurringWeekdayEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        start_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        end_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        reason:
+          type: string
+          maxLength: 128
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cook
+      - created_at
+      - end_minute
+      - id
+      - start_minute
+    CookFinancialSummary:
+      type: object
+      description: Summary of cook gross earnings, cash collections, and payable net
+        balance.
+      properties:
+        cook_id:
+          type: string
+        cook_email:
+          type: string
+        gross_online_earnings_minor_units:
+          type: integer
+        total_cash_collected_minor_units:
+          type: integer
+        outstanding_commission_liability_minor_units:
+          type: integer
+        net_payable_minor_units:
+          type: integer
+        currency:
+          type: string
+      required:
+      - cook_email
+      - cook_id
+      - currency
+      - gross_online_earnings_minor_units
+      - net_payable_minor_units
+      - outstanding_commission_liability_minor_units
+      - total_cash_collected_minor_units
+    CookLeave:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        cook:
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/CookLeaveStatusEnum'
+        reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cook
+      - created_at
+      - end_date
+      - id
+      - start_date
+    CookLeaveStatusEnum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `approved` - Approved
+        * `rejected` - Rejected
+    CookPayoutCreateRequest:
+      type: object
+      description: Admin payload to trigger cook payout disbursement.
+      properties:
+        cook_id:
+          type: string
+          format: uuid
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+      required:
+      - cook_id
+      - period_end
+      - period_start
+    CookPayoutRecord:
+      type: object
+      description: Cook payout disbursement record.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        cook:
+          type: string
+          format: uuid
+          readOnly: true
+        cook_email:
+          type: string
+          readOnly: true
+        period_start:
+          type: string
+          format: date
+          readOnly: true
+        period_end:
+          type: string
+          format: date
+          readOnly: true
+        gross_online_earnings_minor_units:
+          type: integer
+          readOnly: true
+        commission_deductions_minor_units:
+          type: integer
+          readOnly: true
+        net_payout_amount_minor_units:
+          type: integer
+          readOnly: true
+        currency:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/CookPayoutRecordStatusEnum'
+          readOnly: true
+        reference_id:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        processed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - commission_deductions_minor_units
+      - cook
+      - cook_email
+      - created_at
+      - currency
+      - gross_online_earnings_minor_units
+      - id
+      - net_payout_amount_minor_units
+      - period_end
+      - period_start
+      - processed_at
+      - reference_id
+      - status
+    CookPayoutRecordStatusEnum:
+      enum:
+      - pending
+      - processed
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `processed` - Processed
+        * `failed` - Failed
+    CookProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+        user_email:
+          type: string
+          readOnly: true
+        user_name:
+          type: string
+          readOnly: true
+        verification_status:
+          $ref: '#/components/schemas/VerificationStatusEnum'
+        active_status:
+          type: boolean
+        max_daily_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Maximum total cooking and transition minutes allowed per day.
+        max_daily_visits:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Maximum number of household cooking visits allowed per day.
+        societies:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Societies this cook is authorized to serve.
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/CookSkill'
+          readOnly: true
+        availabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/CookAvailability'
+          readOnly: true
+        breaks:
+          type: array
+          items:
+            $ref: '#/components/schemas/CookBreak'
+          readOnly: true
+        leaves:
+          type: array
+          items:
+            $ref: '#/components/schemas/CookLeave'
+          readOnly: true
+        work_policy:
+          allOf:
+          - $ref: '#/components/schemas/CookWorkPolicy'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - availabilities
+      - breaks
+      - created_at
+      - id
+      - leaves
+      - skills
+      - updated_at
+      - user
+      - user_email
+      - user_name
+      - work_policy
+    CookSkill:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        skill:
+          type: string
+          format: uuid
+        skill_code:
+          type: string
+          readOnly: true
+        skill_name:
+          type: string
+          readOnly: true
+        proficiency_level:
+          $ref: '#/components/schemas/ProficiencyLevelEnum'
+      required:
+      - id
+      - skill
+      - skill_code
+      - skill_name
+    CookVerificationProfile:
+      type: object
+      description: Detailed verification record for cooks.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        cook:
+          type: string
+          format: uuid
+          readOnly: true
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+        masked_document_number:
+          type: string
+          description: Masked identification number (e.g. XXXXXXXX1234) for privacy
+          maxLength: 64
+        document_reference:
+          type: string
+          description: Encrypted or secure vault reference to original document
+          maxLength: 255
+        address_proof_type:
+          type: string
+          maxLength: 64
+        address_proof_reference:
+          type: string
+          maxLength: 255
+        years_of_experience:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        reference_contact_name:
+          type: string
+          maxLength: 128
+        reference_contact_phone:
+          type: string
+          maxLength: 32
+        reference_verified:
+          type: boolean
+          readOnly: true
+        background_verification_status:
+          allOf:
+          - $ref: '#/components/schemas/BackgroundVerificationStatusEnum'
+          readOnly: true
+        background_verification_partner:
+          type: string
+          readOnly: true
+        background_verification_reference:
+          type: string
+          readOnly: true
+        skill_review_notes:
+          type: string
+        admin_notes:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VerificationStatusEnum'
+          readOnly: true
+        reviewed_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reviewed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - admin_notes
+      - background_verification_partner
+      - background_verification_reference
+      - background_verification_status
+      - cook
+      - created_at
+      - id
+      - masked_document_number
+      - reference_verified
+      - reviewed_at
+      - reviewed_by
+      - status
+      - updated_at
+    CookVerificationReview:
+      type: object
+      description: Admin review of cook verification dossier.
+      properties:
+        status:
+          $ref: '#/components/schemas/VerificationStatusEnum'
+        background_verification_status:
+          $ref: '#/components/schemas/BackgroundVerificationStatusEnum'
+        background_verification_partner:
+          type: string
+        background_verification_reference:
+          type: string
+        reference_verified:
+          type: boolean
+        admin_notes:
+          type: string
+      required:
+      - status
+    CookWorkPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        max_consecutive_visits:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Maximum consecutive cooking visits before a break is required.
+        max_daily_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Maximum total daily working minutes (overrides profile if more
+            restrictive).
+        buffer_between_visits_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Default buffer/transition minutes required between home visits.
+      required:
+      - id
+    DocumentTypeEnum:
+      enum:
+      - aadhaar
+      - pan
+      - driving_license
+      - voter_id
+      - passport
+      type: string
+      description: |-
+        * `aadhaar` - Aadhaar Card
+        * `pan` - PAN Card
+        * `driving_license` - Driving License
+        * `voter_id` - Voter ID
+        * `passport` - Passport
+    EmergencyContact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        phone:
+          type: string
+          maxLength: 32
+        relationship:
+          type: string
+          maxLength: 64
+        is_primary:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - phone
+      - user
+    EntryTypeEnum:
+      enum:
+      - commission_accrued
+      - commission_deducted
+      - commission_settled
+      type: string
+      description: |-
+        * `commission_accrued` - Commission Accrued (Cash Liability)
+        * `commission_deducted` - Commission Deducted (Online Offset)
+        * `commission_settled` - Commission Settled
+    EventTypeEnum:
+      enum:
+      - check_in
+      - check_out
+      - started
+      - completed
+      - arrival_confirmed
+      - incident_reported
+      - sos_triggered
+      - location_ping
+      type: string
+      description: |-
+        * `check_in` - Check In
+        * `check_out` - Check Out
+        * `started` - Started
+        * `completed` - Completed
+        * `arrival_confirmed` - Household Arrival Confirmed
+        * `incident_reported` - Incident Reported
+        * `sos_triggered` - SOS Triggered
+        * `location_ping` - Location Ping
+    Household:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        society:
+          type: string
+          format: uuid
+        society_name:
+          type: string
+          readOnly: true
+        building:
+          type: string
+          format: uuid
+        building_name:
+          type: string
+          readOnly: true
+        apartment_label:
+          type: string
+          description: Apartment number or door label
+          maxLength: 64
+        status:
+          $ref: '#/components/schemas/HouseholdStatusEnum'
+        notes:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/HouseholdMember'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - apartment_label
+      - building
+      - building_name
+      - created_at
+      - id
+      - members
+      - society
+      - society_name
+      - updated_at
+    HouseholdMember:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+        user_email:
+          type: string
+          readOnly: true
+        user_name:
+          type: string
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/HouseholdMemberRoleEnum'
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - user
+      - user_email
+      - user_name
+    HouseholdMemberRoleEnum:
+      enum:
+      - primary
+      - member
+      type: string
+      description: |-
+        * `primary` - Primary Resident
+        * `member` - Resident Member
+    HouseholdPackageSubscription:
+      type: object
+      description: Detailed subscription serializer tracking entitled, used, and remaining
+        visits.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        household:
+          type: string
+          format: uuid
+          readOnly: true
+        package_plan:
+          type: string
+          format: uuid
+          readOnly: true
+        plan_name:
+          type: string
+          readOnly: true
+        plan_code:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/HouseholdPackageSubscriptionStatusEnum'
+          readOnly: true
+        total_entitled_visits:
+          type: integer
+          readOnly: true
+        used_visits:
+          type: integer
+          readOnly: true
+        missed_visits:
+          type: integer
+          readOnly: true
+        cancelled_visits:
+          type: integer
+          readOnly: true
+        remaining_visits:
+          type: integer
+          readOnly: true
+        preferred_weekdays:
+          readOnly: true
+          description: List of weekday integers (0=Monday, 6=Sunday) for recurring
+            visits.
+        preferred_start_minute:
+          type: integer
+          readOnly: true
+        preferred_end_minute:
+          type: integer
+          readOnly: true
+        preferred_cook:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        preferred_cook_name:
+          type: string
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+          readOnly: true
+        end_date:
+          type: string
+          format: date
+          readOnly: true
+        paused_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        pause_resumes_at:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        auto_renew:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - auto_renew
+      - cancelled_visits
+      - created_at
+      - end_date
+      - household
+      - id
+      - missed_visits
+      - package_plan
+      - pause_resumes_at
+      - paused_at
+      - plan_code
+      - plan_name
+      - preferred_cook
+      - preferred_cook_name
+      - preferred_end_minute
+      - preferred_start_minute
+      - preferred_weekdays
+      - remaining_visits
+      - start_date
+      - status
+      - total_entitled_visits
+      - updated_at
+      - used_visits
+    HouseholdPackageSubscriptionStatusEnum:
+      enum:
+      - active
+      - paused
+      - completed
+      - cancelled
+      - expired
+      type: string
+      description: |-
+        * `active` - Active
+        * `paused` - Paused
+        * `completed` - Completed
+        * `cancelled` - Cancelled
+        * `expired` - Expired
+    HouseholdStatusEnum:
+      enum:
+      - active
+      - inactive
+      - suspended
+      type: string
+      description: |-
+        * `active` - Active
+        * `inactive` - Inactive
+        * `suspended` - Suspended
+    HouseholdVerificationProfile:
+      type: object
+      description: Household residence and society proof verification record.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        household:
+          type: string
+          format: uuid
+          readOnly: true
+        residency_type:
+          $ref: '#/components/schemas/ResidencyTypeEnum'
+        possession_proof_type:
+          $ref: '#/components/schemas/PossessionProofTypeEnum'
+        possession_proof_reference:
+          type: string
+          description: Secure reference to document proof
+          maxLength: 255
+        society_noc_verified:
+          type: boolean
+          readOnly: true
+          description: Confirmed by society office or society admin
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VerificationStatusEnum'
+          readOnly: true
+        admin_notes:
+          type: string
+          readOnly: true
+        reviewed_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reviewed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - admin_notes
+      - created_at
+      - household
+      - id
+      - reviewed_at
+      - reviewed_by
+      - society_noc_verified
+      - status
+      - updated_at
+    HouseholdVerificationReview:
+      type: object
+      description: Admin review of household residency proof.
+      properties:
+        status:
+          $ref: '#/components/schemas/VerificationStatusEnum'
+        society_noc_verified:
+          type: boolean
+        admin_notes:
+          type: string
+      required:
+      - status
+    IncidentAppeal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        incident:
+          type: string
+          format: uuid
+        appellant:
+          type: string
+          format: uuid
+          readOnly: true
+        appellant_email:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+        additional_evidence: {}
+        status:
+          allOf:
+          - $ref: '#/components/schemas/IncidentAppealStatusEnum'
+          readOnly: true
+        decision_notes:
+          type: string
+          readOnly: true
+        decided_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        decided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - appellant
+      - appellant_email
+      - created_at
+      - decided_at
+      - decided_by
+      - decision_notes
+      - id
+      - incident
+      - reason
+      - status
+    IncidentAppealStatusEnum:
+      enum:
+      - submitted
+      - under_review
+      - upheld
+      - overturned
+      type: string
+      description: |-
+        * `submitted` - Submitted
+        * `under_review` - Under Review
+        * `upheld` - Upheld
+        * `overturned` - Overturned
+    IncidentReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        assignment:
+          type: string
+          format: uuid
+          nullable: true
+        reported_by:
+          type: string
+          format: uuid
+          readOnly: true
+        reported_by_email:
+          type: string
+          readOnly: true
+        target_user:
+          type: string
+          format: uuid
+          nullable: true
+        target_user_email:
+          type: string
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        description:
+          type: string
+        evidence_urls:
+          description: Secure links to photos, documents, or supporting evidence
+        status:
+          allOf:
+          - $ref: '#/components/schemas/IncidentReportStatusEnum'
+          readOnly: true
+        investigation_notes:
+          type: string
+          readOnly: true
+          description: Confidential administrative notes visible strictly to Trust
+            & Safety team
+        assigned_investigator:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        resolution_summary:
+          type: string
+          readOnly: true
+        resolved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assigned_investigator
+      - created_at
+      - description
+      - id
+      - investigation_notes
+      - reported_by
+      - reported_by_email
+      - resolution_summary
+      - resolved_at
+      - status
+      - target_user_email
+    IncidentReportStatusEnum:
+      enum:
+      - reported
+      - under_investigation
+      - action_required
+      - resolved
+      - dismissed
+      - appealed
+      type: string
+      description: |-
+        * `reported` - Reported
+        * `under_investigation` - Under Investigation
+        * `action_required` - Action Required
+        * `resolved` - Resolved
+        * `dismissed` - Dismissed
+        * `appealed` - Appealed
+    Login:
+      type: object
+      description: User login supporting registered mobile number OR registered email
+        + password with brute-force protection.
+      properties:
+        identifier:
+          type: string
+          description: Registered email address or mobile phone number
+        email:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+    MealTypeEnum:
+      enum:
+      - breakfast
+      - lunch
+      - dinner
+      - snacks
+      type: string
+      description: |-
+        * `breakfast` - Breakfast
+        * `lunch` - Lunch
+        * `dinner` - Dinner
+        * `snacks` - Snacks
+    ModerationStatusEnum:
+      enum:
+      - published
+      - flagged
+      - hidden
+      type: string
+      description: |-
+        * `published` - Published
+        * `flagged` - Flagged for Moderation
+        * `hidden` - Hidden
+    NotificationChannelEnum:
+      enum:
+      - sms
+      - email
+      - push
+      type: string
+      description: |-
+        * `sms` - SMS
+        * `email` - Email
+        * `push` - Push
+    NullEnum:
+      enum:
+      - null
+    OTPChannelEnum:
+      enum:
+      - sms
+      - email
+      type: string
+      description: |-
+        * `sms` - SMS
+        * `email` - Email
+    OTPLogin:
+      type: object
+      description: Passwordless login using either verified email or verified mobile
+        number + OTP.
+      properties:
+        target:
+          type: string
+          description: Registered email address or phone number
+        channel:
+          $ref: '#/components/schemas/OTPChannelEnum'
+        otp:
+          type: string
+          maxLength: 6
+          minLength: 6
+      required:
+      - channel
+      - otp
+      - target
+    OTPRequest:
+      type: object
+      description: Request generation and delivery of an OTP.
+      properties:
+        target:
+          type: string
+          description: Target email or mobile number
+        channel:
+          $ref: '#/components/schemas/OTPChannelEnum'
+        purpose:
+          allOf:
+          - $ref: '#/components/schemas/PurposeEnum'
+          default: login
+      required:
+      - channel
+      - target
+    OTPVerify:
+      type: object
+      description: Verify an issued OTP token.
+      properties:
+        target:
+          type: string
+        channel:
+          $ref: '#/components/schemas/OTPChannelEnum'
+        purpose:
+          $ref: '#/components/schemas/PurposeEnum'
+        otp:
+          type: string
+          maxLength: 6
+          minLength: 6
+      required:
+      - channel
+      - otp
+      - purpose
+      - target
+    PackageCancelRequest:
+      type: object
+      description: Request payload to cancel subscription.
+      properties:
+        cancellation_reason:
+          type: string
+          default: ''
+    PackagePauseRequest:
+      type: object
+      description: Request payload to pause subscription.
+      properties:
+        pause_days:
+          type: integer
+          maximum: 30
+          minimum: 1
+      required:
+      - pause_days
+    PackagePlan:
+      type: object
+      description: Serializer for package plans (weekly, monthly, custom).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        society:
+          type: string
+          format: uuid
+          nullable: true
+          description: Society-specific package; null indicates global platform plan.
+        society_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        code:
+          type: string
+          maxLength: 64
+        plan_type:
+          $ref: '#/components/schemas/PlanTypeEnum'
+        visit_frequency_per_week:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Nominal visits per week (e.g. 5 days / week).
+        total_visits:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Total number of visits entitled within this package cycle.
+        validity_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Validity duration in calendar days (e.g. 7 for weekly, 30 for
+            monthly).
+        price_minor_units:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Package price in minor currency units (e.g. 95000 paise = 950
+            INR).
+        currency:
+          type: string
+          maxLength: 3
+        meal_type:
+          $ref: '#/components/schemas/MealTypeEnum'
+        default_duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        max_pause_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Maximum total days this package can be paused.
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - name
+      - society_name
+      - updated_at
+    PackageRescheduleVisitRequest:
+      type: object
+      description: Request payload to reschedule an individual package visit.
+      properties:
+        new_service_date:
+          type: string
+          format: date
+        earliest_start:
+          type: string
+          default: 07:30
+        latest_finish:
+          type: string
+          default: 09:00
+      required:
+      - new_service_date
+    PackageSubscribeRequest:
+      type: object
+      description: Request payload to subscribe household to a package plan.
+      properties:
+        package_plan_id:
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date
+        preferred_weekdays:
+          type: array
+          items:
+            type: integer
+            maximum: 6
+            minimum: 0
+        preferred_start:
+          type: string
+          default: 07:30
+        preferred_end:
+          type: string
+          default: 09:00
+        preferred_cook_id:
+          type: string
+          format: uuid
+          nullable: true
+        auto_renew:
+          type: boolean
+          default: false
+      required:
+      - package_plan_id
+      - start_date
+    PaginatedCookProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CookProfile'
+    PaginatedEmergencyContactList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmergencyContact'
+    PaginatedHouseholdList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Household'
+    PaginatedIncidentReportList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/IncidentReport'
+    PaginatedSOSIncidentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SOSIncident'
+    PaginatedSocietyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Society'
+    PasswordResetConfirm:
+      type: object
+      description: Confirm password reset with OTP verification.
+      properties:
+        target:
+          type: string
+        channel:
+          $ref: '#/components/schemas/OTPChannelEnum'
+        otp:
+          type: string
+          maxLength: 6
+          minLength: 6
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 8
+      required:
+      - channel
+      - new_password
+      - otp
+      - target
+    PasswordResetRequest:
+      type: object
+      description: Request a password reset OTP for registered mobile or email.
+      properties:
+        target:
+          type: string
+          description: Registered email address or mobile phone number
+        channel:
+          $ref: '#/components/schemas/OTPChannelEnum'
+      required:
+      - channel
+      - target
+    PatchedCookAvailability:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        cook:
+          type: string
+          format: uuid
+        weekday:
+          nullable: true
+          minimum: -2147483648
+          maximum: 2147483647
+          oneOf:
+          - $ref: '#/components/schemas/RecurringWeekdayEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        specific_date:
+          type: string
+          format: date
+          nullable: true
+        start_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Start minute from midnight (0-1440)
+        end_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: End minute from midnight (0-1440)
+        availability_type:
+          $ref: '#/components/schemas/AvailabilityTypeEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedEmergencyContact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        phone:
+          type: string
+          maxLength: 32
+        relationship:
+          type: string
+          maxLength: 64
+        is_primary:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedServicePricingRule:
+      type: object
+      description: Serializer for service pricing rules.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        society:
+          type: string
+          format: uuid
+          nullable: true
+          description: Society-specific override; null indicates global platform baseline.
+        society_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        code:
+          type: string
+          maxLength: 64
+        pricing_type:
+          $ref: '#/components/schemas/PricingTypeEnum'
+        base_fee_minor_units:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Fixed base visit fee in minor currency units (e.g., 20000 paise
+            = 200 INR).
+        per_minute_rate_minor_units:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Rate per service minute in minor units (e.g., 250 paise = 2.5
+            INR/min).
+        breakfast_multiplier:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        lunch_multiplier:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        dinner_multiplier:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        snacks_multiplier:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 3
+        is_active:
+          type: boolean
+        effective_from:
+          type: string
+          format: date
+          nullable: true
+        effective_to:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PaymentOrder:
+      type: object
+      description: Payment order serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        household:
+          type: string
+          format: uuid
+          readOnly: true
+        booking:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        subscription:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        amount_minor_units:
+          type: integer
+          readOnly: true
+        currency:
+          type: string
+          readOnly: true
+        provider:
+          type: string
+          readOnly: true
+        provider_order_id:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentOrderStatusEnum'
+          readOnly: true
+        idempotency_key:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount_minor_units
+      - booking
+      - created_at
+      - currency
+      - household
+      - id
+      - idempotency_key
+      - provider
+      - provider_order_id
+      - status
+      - subscription
+      - updated_at
+    PaymentOrderCreateRequest:
+      type: object
+      description: Payload to create an online payment order.
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          nullable: true
+        subscription_id:
+          type: string
+          format: uuid
+          nullable: true
+        idempotency_key:
+          type: string
+          default: ''
+    PaymentOrderStatusEnum:
+      enum:
+      - created
+      - paid
+      - failed
+      - expired
+      type: string
+      description: |-
+        * `created` - Created
+        * `paid` - Paid
+        * `failed` - Failed
+        * `expired` - Expired
+    PaymentTransaction:
+      type: object
+      description: Payment transaction details.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        payment_order:
+          type: string
+          format: uuid
+          readOnly: true
+        provider_payment_id:
+          type: string
+          readOnly: true
+        amount_minor_units:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentTransactionStatusEnum'
+          readOnly: true
+        payment_method:
+          type: string
+          readOnly: true
+        signature:
+          type: string
+          readOnly: true
+        error_code:
+          type: string
+          readOnly: true
+        error_description:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount_minor_units
+      - created_at
+      - error_code
+      - error_description
+      - id
+      - payment_method
+      - payment_order
+      - provider_payment_id
+      - signature
+      - status
+    PaymentTransactionStatusEnum:
+      enum:
+      - success
+      - failed
+      - refunded
+      type: string
+      description: |-
+        * `success` - Success
+        * `failed` - Failed
+        * `refunded` - Refunded
+    PaymentVerifyRequest:
+      type: object
+      description: Payload to verify gateway payment signature.
+      properties:
+        provider_order_id:
+          type: string
+        provider_payment_id:
+          type: string
+        signature:
+          type: string
+        payment_method:
+          type: string
+          default: card
+      required:
+      - provider_order_id
+      - provider_payment_id
+      - signature
+    PlanTypeEnum:
+      enum:
+      - weekly
+      - monthly
+      - custom
+      type: string
+      description: |-
+        * `weekly` - Weekly Package
+        * `monthly` - Monthly Package
+        * `custom` - Custom Frequency Package
+    PlatformCommissionConfig:
+      type: object
+      description: Serializer for platform commission configuration.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        society:
+          type: string
+          format: uuid
+          nullable: true
+          description: Society-specific commission override; null indicates global
+            default.
+        society_name:
+          type: string
+          readOnly: true
+        commission_type:
+          $ref: '#/components/schemas/CommissionTypeEnum'
+        percentage_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Platform commission percentage (e.g. 15.00%).
+        fixed_fee_minor_units:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Fixed commission fee per visit in minor units (paise).
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - society_name
+      - updated_at
+    PossessionProofTypeEnum:
+      enum:
+      - utility_bill
+      - sale_deed
+      - rental_agreement
+      - society_maintenance_bill
+      type: string
+      description: |-
+        * `utility_bill` - Electricity / Utility Bill
+        * `sale_deed` - Property Sale Deed
+        * `rental_agreement` - Registered Rental Agreement
+        * `society_maintenance_bill` - Society Maintenance Receipt
+    PriceEstimateRequest:
+      type: object
+      description: Request payload to calculate an upfront price estimate.
+      properties:
+        society_id:
+          type: string
+          format: uuid
+          nullable: true
+        duration_minutes:
+          type: integer
+          maximum: 240
+          minimum: 15
+          default: 45
+        meal_type:
+          allOf:
+          - $ref: '#/components/schemas/MealTypeEnum'
+          default: breakfast
+        pricing_type:
+          allOf:
+          - $ref: '#/components/schemas/PricingTypeEnum'
+          default: per_visit
+    PriceEstimateResponse:
+      type: object
+      description: Response format for estimated pricing breakdown.
+      properties:
+        duration_minutes:
+          type: integer
+        meal_type:
+          type: string
+        base_fee_minor_units:
+          type: integer
+        duration_fee_minor_units:
+          type: integer
+        meal_multiplier:
+          type: number
+          format: double
+        subtotal_minor_units:
+          type: integer
+        platform_commission_minor_units:
+          type: integer
+        cook_earnings_minor_units:
+          type: integer
+        total_amount_minor_units:
+          type: integer
+        currency:
+          type: string
+        rule_code:
+          type: string
+        commission_rate:
+          type: number
+          format: double
+      required:
+      - base_fee_minor_units
+      - commission_rate
+      - cook_earnings_minor_units
+      - currency
+      - duration_fee_minor_units
+      - duration_minutes
+      - meal_multiplier
+      - meal_type
+      - platform_commission_minor_units
+      - rule_code
+      - subtotal_minor_units
+      - total_amount_minor_units
+    PricingTypeEnum:
+      enum:
+      - per_visit
+      - weekly_plan
+      - monthly_plan
+      type: string
+      description: |-
+        * `per_visit` - Per-Visit Pricing
+        * `weekly_plan` - Weekly Subscription Base
+        * `monthly_plan` - Monthly Subscription Base
+    ProficiencyLevelEnum:
+      enum:
+      - basic
+      - intermediate
+      - expert
+      type: string
+      description: |-
+        * `basic` - Basic
+        * `intermediate` - Intermediate
+        * `expert` - Expert
+    PurposeEnum:
+      enum:
+      - registration
+      - login
+      - admin_mfa
+      - password_reset
+      - contact_change
+      type: string
+      description: |-
+        * `registration` - registration
+        * `login` - login
+        * `admin_mfa` - admin_mfa
+        * `password_reset` - password_reset
+        * `contact_change` - contact_change
+    RecurringWeekdayEnum:
+      enum:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      type: integer
+      description: |-
+        * `0` - Monday
+        * `1` - Tuesday
+        * `2` - Wednesday
+        * `3` - Thursday
+        * `4` - Friday
+        * `5` - Saturday
+        * `6` - Sunday
+    RefundRecord:
+      type: object
+      description: Refund record serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        payment_transaction:
+          type: string
+          format: uuid
+          readOnly: true
+        amount_minor_units:
+          type: integer
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        provider_refund_id:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/RefundRecordStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount_minor_units
+      - created_at
+      - id
+      - payment_transaction
+      - provider_refund_id
+      - reason
+      - status
+    RefundRecordStatusEnum:
+      enum:
+      - requested
+      - processed
+      - failed
+      type: string
+      description: |-
+        * `requested` - Requested
+        * `processed` - Processed
+        * `failed` - Failed
+    RefundRequest:
+      type: object
+      description: Payload to issue a refund.
+      properties:
+        amount_minor_units:
+          type: integer
+          minimum: 1
+          nullable: true
+        reason:
+          type: string
+          default: ''
+    Register:
+      type: object
+      description: User registration serializer enforcing strict role segregation
+        and initial channel OTP dispatch.
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        phone:
+          type: string
+          default: ''
+        first_name:
+          type: string
+          default: ''
+        last_name:
+          type: string
+          default: ''
+        legal_name:
+          type: string
+          default: ''
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RegisterRoleEnum'
+          default: household_member
+          description: |-
+            Public registration is strictly restricted to household_member and cook roles.
+
+            * `household_member` - household_member
+            * `cook` - cook
+        verification_channel:
+          allOf:
+          - $ref: '#/components/schemas/OTPChannelEnum'
+          description: |-
+            Target channel for initial registration OTP delivery (sms or email).
+
+            * `sms` - SMS
+            * `email` - Email
+      required:
+      - email
+      - password
+    RegisterRoleEnum:
+      enum:
+      - household_member
+      - cook
+      type: string
+      description: |-
+        * `household_member` - household_member
+        * `cook` - cook
+    RegisterVerifyOTP:
+      type: object
+      description: Verify registration OTP code and complete initial registration.
+      properties:
+        target:
+          type: string
+          description: Registered email address or mobile phone number
+        channel:
+          $ref: '#/components/schemas/OTPChannelEnum'
+        otp:
+          type: string
+          maxLength: 6
+          minLength: 6
+      required:
+      - channel
+      - otp
+      - target
+    ResidencyTypeEnum:
+      enum:
+      - owner
+      - tenant
+      type: string
+      description: |-
+        * `owner` - Owner
+        * `tenant` - Tenant
+    RestrictionTypeEnum:
+      enum:
+      - warning
+      - booking_blocked
+      - payout_frozen
+      - temporary_suspension
+      - permanent_ban
+      type: string
+      description: |-
+        * `warning` - Formal Warning
+        * `booking_blocked` - Booking Privileges Blocked
+        * `payout_frozen` - Cook Payout Frozen
+        * `temporary_suspension` - Temporary Suspension
+        * `permanent_ban` - Permanent Ban
+    RoleCodeEnum:
+      enum:
+      - society_admin
+      - platform_admin
+      type: string
+      description: |-
+        * `society_admin` - society_admin
+        * `platform_admin` - platform_admin
+    SOSIncident:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        assignment:
+          type: string
+          format: uuid
+          nullable: true
+        triggered_by:
+          type: string
+          format: uuid
+          readOnly: true
+        triggered_by_email:
+          type: string
+          readOnly: true
+        trigger_source:
+          $ref: '#/components/schemas/TriggerSourceEnum'
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        notes:
+          type: string
+        india_112_metadata:
+          readOnly: true
+          description: Standardized National Emergency helpline 112 metadata payload
+        status:
+          $ref: '#/components/schemas/SOSIncidentStatusEnum'
+        external_dispatch_confirmed:
+          type: boolean
+          readOnly: true
+          description: Must never be true unless an actual 112/police dispatch service
+            explicitly confirms
+        notification_logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SafetyNotificationLog'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        resolved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        resolved_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - external_dispatch_confirmed
+      - id
+      - india_112_metadata
+      - notification_logs
+      - resolved_at
+      - resolved_by
+      - trigger_source
+      - triggered_by
+      - triggered_by_email
+    SOSIncidentStatusEnum:
+      enum:
+      - triggered
+      - acknowledged
+      - escalated
+      - resolved
+      - false_alarm
+      type: string
+      description: |-
+        * `triggered` - Triggered
+        * `acknowledged` - Acknowledged
+        * `escalated` - Escalated
+        * `resolved` - Resolved
+        * `false_alarm` - False Alarm
+    SafetyNotificationLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sos_incident:
+          type: string
+          format: uuid
+        recipient_name:
+          type: string
+          maxLength: 128
+        recipient_target:
+          type: string
+          maxLength: 255
+        channel:
+          $ref: '#/components/schemas/NotificationChannelEnum'
+        status:
+          $ref: '#/components/schemas/SafetyNotificationLogStatusEnum'
+        payload: {}
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - channel
+      - id
+      - recipient_target
+      - sent_at
+      - sos_incident
+    SafetyNotificationLogStatusEnum:
+      enum:
+      - sent
+      - delivered
+      - failed
+      type: string
+      description: |-
+        * `sent` - Sent
+        * `delivered` - Delivered
+        * `failed` - Failed
+    SchedulePlanDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        society:
+          type: string
+          format: uuid
+        society_name:
+          type: string
+          readOnly: true
+        service_date:
+          type: string
+          format: date
+        version:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          default: 1
+        status:
+          $ref: '#/components/schemas/SchedulePlanDetailStatusEnum'
+        solver_status:
+          type: string
+          maxLength: 32
+        objective_summary: {}
+        assignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/CookAssignmentDetail'
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assignments
+      - created_at
+      - id
+      - published_at
+      - service_date
+      - society
+      - society_name
+    SchedulePlanDetailStatusEnum:
+      enum:
+      - draft
+      - published
+      - superseded
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `published` - Published
+        * `superseded` - Superseded
+    ServicePricingRule:
+      type: object
+      description: Serializer for service pricing rules.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        society:
+          type: string
+          format: uuid
+          nullable: true
+          description: Society-specific override; null indicates global platform baseline.
+        society_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 128
+        code:
+          type: string
+          maxLength: 64
+        pricing_type:
+          $ref: '#/components/schemas/PricingTypeEnum'
+        base_fee_minor_units:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Fixed base visit fee in minor currency units (e.g., 20000 paise
+            = 200 INR).
+        per_minute_rate_minor_units:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Rate per service minute in minor units (e.g., 250 paise = 2.5
+            INR/min).
+        breakfast_multiplier:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        lunch_multiplier:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        dinner_multiplier:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        snacks_multiplier:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 3
+        is_active:
+          type: boolean
+        effective_from:
+          type: string
+          format: date
+          nullable: true
+        effective_to:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - name
+      - society_name
+      - updated_at
+    SeverityEnum:
+      enum:
+      - low
+      - medium
+      - high
+      - critical
+      type: string
+      description: |-
+        * `low` - Low
+        * `medium` - Medium
+        * `high` - High
+        * `critical` - Critical
+    Society:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        address:
+          type: string
+        timezone:
+          type: string
+          maxLength: 64
+        status:
+          $ref: '#/components/schemas/SocietyStatusEnum'
+        buildings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Building'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - address
+      - buildings
+      - created_at
+      - id
+      - name
+      - updated_at
+    SocietyStatusEnum:
+      enum:
+      - active
+      - inactive
+      type: string
+      description: |-
+        * `active` - Active
+        * `inactive` - Inactive
+    TokenResponse:
+      type: object
+      description: JWT Token pair response.
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+      - access
+      - refresh
+      - user
+    TriggerSourceEnum:
+      enum:
+      - cook
+      - household
+      - automated
+      - admin
+      type: string
+      description: |-
+        * `cook` - Cook
+        * `household` - Household
+        * `automated` - Automated Overdue Detection
+        * `admin` - Platform Administrator
+    TwoSidedReview:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        assignment:
+          type: string
+          format: uuid
+        reviewer:
+          type: string
+          format: uuid
+          readOnly: true
+        reviewer_email:
+          type: string
+          readOnly: true
+        reviewee:
+          type: string
+          format: uuid
+          readOnly: true
+        reviewee_email:
+          type: string
+          readOnly: true
+        rating:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Star rating from 1 to 5
+        feedback_tags:
+          description: Structured tags e.g. punctual, delicious, clean, polite
+        comment:
+          type: string
+        moderation_status:
+          allOf:
+          - $ref: '#/components/schemas/ModerationStatusEnum'
+          readOnly: true
+        moderation_notes:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assignment
+      - created_at
+      - id
+      - moderation_notes
+      - moderation_status
+      - rating
+      - reviewee
+      - reviewee_email
+      - reviewer
+      - reviewer_email
+    User:
+      type: object
+      description: Public user serializer with assigned roles and verification status.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 32
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        legal_name:
+          type: string
+          maxLength: 255
+        roles:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        is_email_verified:
+          type: boolean
+          readOnly: true
+        is_mobile_verified:
+          type: boolean
+          readOnly: true
+        is_fully_verified:
+          type: boolean
+          readOnly: true
+        mfa_enabled:
+          type: boolean
+        is_active:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+      - is_active
+      - is_email_verified
+      - is_fully_verified
+      - is_mobile_verified
+      - roles
+    VerificationStatusEnum:
+      enum:
+      - pending
+      - verified
+      - rejected
+      - suspended
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `verified` - Verified
+        * `rejected` - Rejected
+        * `suspended` - Suspended
+    VisitEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        assignment:
+          type: string
+          format: uuid
+        event_type:
+          $ref: '#/components/schemas/EventTypeEnum'
+        recorded_at:
+          type: string
+          format: date-time
+          readOnly: true
+        notes:
+          type: string
+        metadata: {}
+      required:
+      - assignment
+      - event_type
+      - id
+      - recorded_at
+    VisitSafetyCheck:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        assignment:
+          type: string
+          format: uuid
+          readOnly: true
+        check_in_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        check_out_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        arrival_confirmed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        arrival_confirmed_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        is_overdue:
+          type: boolean
+          readOnly: true
+        overdue_reason:
+          type: string
+          readOnly: true
+        location_sharing_consented:
+          type: boolean
+        last_latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        last_longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        last_location_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - arrival_confirmed_at
+      - arrival_confirmed_by
+      - assignment
+      - check_in_at
+      - check_out_at
+      - created_at
+      - id
+      - is_overdue
+      - last_location_at
+      - overdue_reason
+      - updated_at
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
